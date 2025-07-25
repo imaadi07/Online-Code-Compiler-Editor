@@ -1,0 +1,216 @@
+@import url("https://fonts.googleapis.com/css2?family=Winky+Sans:ital,wght@0,300..900;1,300..900&display=swap");
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  width: 100%;
+  font-family: "Winky Sans", sans-serif;
+}
+
+.main-container {
+  height: 100vh;
+  width: 100vw;
+  background-color: rgb(0, 0, 0);
+  overflow-x: hidden;
+}
+
+.body {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.heading-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.heading {
+  font-size: 2rem;
+  font-weight: 600;
+  color: white;
+}
+
+/* Utility Box Full Width */
+.utility-box {
+  width: 100vw;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  padding: 16px 24px;
+  background-color: #f5f7fa;
+  border-radius: 0 0 12px 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  flex-wrap: wrap;
+}
+
+/* Language Selector */
+.lang-selector-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.lang-label {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #333;
+}
+
+.lang-button {
+  padding: 8px 14px;
+  font-size: 1rem;
+  font-weight: 500;
+  background-color: #fff;
+  color: #333;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  appearance: none;
+  background-image: url('data:image/svg+xml;utf8,<svg fill="%23333" height="20" viewBox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  padding-right: 36px;
+}
+
+.lang-button:hover {
+  border-color: #888;
+}
+
+.lang-button:focus {
+  outline: none;
+  border-color: #4c8bf5;
+  box-shadow: 0 0 0 2px rgba(76, 139, 245, 0.3);
+}
+
+/* Run Button */
+.run-button {
+  padding: 10px 20px;
+  background-color: #4c8bf5;
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(76, 139, 245, 0.2);
+}
+
+.run-button:hover {
+  background-color: #3a6edb;
+  box-shadow: 0 6px 10px rgba(76, 139, 245, 0.3);
+}
+
+.run-button:active {
+  transform: scale(0.98);
+}
+
+.run-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(76, 139, 245, 0.4);
+}
+
+/* Code and Output Layout */
+.code-box {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  padding: 1rem 0;
+}
+
+/* Editor Section */
+.editor {
+  height: 70vh;
+  width: 72%;
+  min-width: 300px;
+}
+
+/* Output Box (contains Input + Output vertically stacked) */
+.code-output-box {
+  width: 26%;
+  height: 70vh;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow-y: auto;
+}
+
+/* ✅ UPDATED: Flex distribution for Input and Output */
+.input-box {
+  flex: 0 0 40%;
+  display: flex;
+  flex-direction: column;
+}
+
+.output-box {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Textarea Styling */
+textarea {
+  flex: 1;
+  height: 100%;
+  width: 100%;
+  padding: 10px;
+  font-size: 0.9rem;
+  border-radius: 0.5rem;
+  border: 1px solid white;
+  background-color: #d7c1c1;
+  color: #222;
+  resize: vertical;
+}
+
+textarea:focus {
+  outline: none;
+  border-color: #4c8bf5;
+  box-shadow: 0 0 0 2px rgba(76, 139, 245, 0.2);
+}
+
+/* ✅ UPDATED: Output Styling */
+.output-box pre {
+  flex: 1;
+  height: 100%;
+  background-color: #1e1e1e;
+  padding: 1rem;
+  border-radius: 8px;
+  overflow-y: auto;
+  font-size: 0.9rem;
+  color: #00ff90;
+  margin: 0;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 900px) {
+  .code-box {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .editor,
+  .code-output-box {
+    width: 100%;
+    height: 60vh;
+  }
+
+  .code-output-box {
+    margin-top: 1rem;
+  }
+}
