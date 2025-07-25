@@ -1,6 +1,6 @@
 # Online Compiler 
 
-This is a effort by me to create a portable online compiler which can execute code in a isolated and secure enviornment with all required error handling. By this in mind I started wih node.js and express.js as backend pillars with Docker and Conatiners for isolated code execution, and in frontend React.js and Monaco Editor handling all the user inputs.
+This is an effort on my part to create a portable online compiler that can execute code in an isolated and secure environment, with all necessary error handling. With this in mind, I started with Node.js and Express.js as backend pillars with Docker and containers for isolated code execution, and in the frontend, React.js and Monaco Editor handling all the user inputs.
 
 
 ---
@@ -15,12 +15,23 @@ This is a effort by me to create a portable online compiler which can execute co
 
 ## Running the Project: 
 
-1. **Backend: (Make sure you have docker installed in the system) **
+1. ## Backend: (Make sure you have docker installed in the system) 
 ```bash
 1. cd Backend
 2. npm install
 3. npm start
 ```
 
-2. **Frontend: ***
+2. ## Frontend:
+   ```bash
+   1. npm install
+   2. npm run dev
+
+## More Details
+
+In this project backend runs at port 3000. If you want to use any other port, please add it to the file.
+
+## Project Screenshot
+
+![Online Compiler Screenshot](assets/project-screenshot.png)
 
