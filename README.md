@@ -33,5 +33,6 @@ In this project backend runs at port 3000. If you want to use any other port, pl
 
 ## Project Screenshot
 
-![Online Compiler Screenshot](assets/Project.png)
+![Project Folder Structure](frontend/src/assets/Project.png)
+
 
