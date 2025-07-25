@@ -19,7 +19,7 @@ This is an effort on my part to create a portable online compiler that can execu
 ```bash
 1. cd Backend
 2. npm install
-3. npm start
+3. npm run dev
 ```
 
 2. ## Frontend:
