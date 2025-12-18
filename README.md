@@ -19,7 +19,7 @@ This is an effort on my part to create a portable online compiler that can execu
 ```bash
 1. cd Backend
 2. npm install
-3. npm start
+3. npm run dev
 ```
 
 2. ## Frontend:
@@ -33,5 +33,6 @@ In this project backend runs at port 3000. If you want to use any other port, pl
 
 ## Project Screenshot
 
-![Online Compiler Screenshot](assets/Project.png)
+![Project Folder Structure](frontend/src/assets/Project.png)
+
 
