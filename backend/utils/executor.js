@@ -9,17 +9,16 @@ const docker = new Docker({
   port: process.env.DOCKER_PORT ? parseInt(process.env.DOCKER_PORT) : 2375,
 });
 
-// ✅ FIXED: Preserve \n and \t in output
 const cleanOutput = (data) => {
   return data
     .toString("utf8")
-    .replace(/[^\x09\x0A\x0D\x20-\x7E]/g, "") // keep tabs, newlines, and carriage returns
+    .replace(/[^\x09\x0A\x0D\x20-\x7E]/g, "")
     .trim();
 };
 
 const executeCode = async (code, input, language) => {
   const rawJobId = uuidv4();
-  const jobId = rawJobId.replace(/-/g, "_"); // Java-safe name
+  const jobId = rawJobId.replace(/-/g, "_"); 
 
   const basePath = path.join(__dirname, "..", "executions");
   await fs.ensureDir(basePath);
@@ -32,7 +31,6 @@ const executeCode = async (code, input, language) => {
   const inputFile = path.join(basePath, `${jobId}.txt`);
   const classFile = path.join(basePath, `Main_${jobId}.class`);
 
-  // Modify Java class name
   let modifiedCode = code;
   if (language === "java") {
     modifiedCode = code.replace(
@@ -41,11 +39,9 @@ const executeCode = async (code, input, language) => {
     );
   }
 
-  // Write code and input to files
   await fs.writeFile(codeFile, modifiedCode);
   await fs.writeFile(inputFile, input);
 
-  // Define command to run inside Docker
   const containerCmd =
     language === "python"
       ? ["sh", "-c", `python ${jobId}.py < ${jobId}.txt`]
@@ -84,7 +80,6 @@ const executeCode = async (code, input, language) => {
       let output = "";
 
       stream.on("data", (chunk) => {
-        // Optional debug: console.log("Raw Output:", JSON.stringify(chunk.toString()));
         output += cleanOutput(chunk);
       });
 
@@ -98,7 +93,7 @@ const executeCode = async (code, input, language) => {
       const timeout = setTimeout(async () => {
         await container.kill().catch(() => {});
         await container.remove().catch(() => {});
-        reject(new Error("⏱️ Execution timed out after 5 seconds"));
+        reject(new Error("Execution timed out after 5 seconds"));
       }, 5000);
 
       await container.wait();

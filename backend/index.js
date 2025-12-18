@@ -1,4 +1,3 @@
-// index.js
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
@@ -25,7 +24,6 @@ app.post("/execute", async (req, res) => {
 
   try {
     const output = await executeCode(code, input, language);
-    // console.log(output);
     res.json({ output, error: "" });
   } catch (err) {
     res.status(500).json({ output: "", error: err.message });
