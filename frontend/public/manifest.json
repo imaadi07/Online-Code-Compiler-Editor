@@ -1,0 +1,17 @@
+{
+  "short_name": "CodeCraft",
+  "name": "CodeCraft Online IDE & Compiler",
+  "description": "Multi-language online compiler and code editor supporting Python, Java, JavaScript, C++, and C.",
+  "icons": [
+    {
+      "src": "/vite.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192 512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#0e1217",
+  "theme_color": "#0e1217",
+  "display": "standalone",
+  "orientation": "landscape-primary"
+}
