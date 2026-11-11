@@ -7,13 +7,18 @@ import FileExplorer from "./components/FileExplorer";
 import EditorTabBar from "./components/EditorTabBar";
 import ConsoleDrawer from "./components/ConsoleDrawer";
 import StatusBar from "./components/StatusBar";
+import CommandPalette from "./components/CommandPalette";
 import {
   INITIAL_PROJECT_FILES,
   getMonacoLanguage,
 } from "./constants/templates";
 import "./App.css";
 
-const API_BASE_URL = "http://localhost:3000";
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ||
+  (typeof window !== "undefined" && window.location.port === "5173"
+    ? "http://localhost:3000"
+    : "");
 
 // Helper: Flatten all files in a tree with their full relative paths
 const flattenFiles = (nodes, parentPath = "") => {
@@ -103,6 +108,23 @@ function App() {
   const editorRef = useRef(null);
   const containerRef = useRef(null);
 
+  // Theme state ('dark' | 'light')
+  const [theme, setTheme] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("codecraft_theme") || "dark";
+    }
+    return "dark";
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("codecraft_theme", theme);
+  }, [theme]);
+
+  const handleToggleTheme = () => {
+    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+  };
+
   // View state: 'dashboard' | 'compiler'
   const [currentView, setCurrentView] = useState("dashboard");
 
@@ -110,8 +132,24 @@ function App() {
   const [projects, setProjects] = useState(INITIAL_PROJECT_FILES);
   const [language, setLanguage] = useState("python");
 
-  // File Explorer & Editor Tabs state
-  const [isExplorerOpen, setIsExplorerOpen] = useState(true);
+  // File Explorer & Editor Tabs state (Auto-collapses below 1024px)
+  const [isExplorerOpen, setIsExplorerOpen] = useState(() => {
+    return typeof window !== "undefined" ? window.innerWidth >= 1024 : true;
+  });
+
+  // Command Palette State
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 1024) {
+        setIsExplorerOpen(false);
+      }
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const currentTree = projects[language] || [];
   const allCurrentFiles = flattenFiles(currentTree);
 
@@ -131,7 +169,7 @@ function App() {
   const [cursorPosition, setCursorPosition] = useState({ lineNumber: 1, column: 1 });
 
   // Workspace Split Ratio (Editor % vs Console %)
-  const [splitRatio, setSplitRatio] = useState(62);
+  const [splitRatio, setSplitRatio] = useState(58);
   const [isDragging, setIsDragging] = useState(false);
 
   // Retrieve current active file
@@ -234,7 +272,6 @@ function App() {
       [language]: deleteNodeFromTree(prev[language], id),
     }));
 
-    // If deleted node was open in tabs, close it
     setOpenFileIds((prev) => prev.filter((openId) => openId !== id));
     if (activeFileId === id) {
       const remainingFiles = allCurrentFiles.filter((f) => f.id !== id);
@@ -292,7 +329,6 @@ function App() {
 
     const startTime = performance.now();
 
-    // Package all project files with their relative paths
     const filesToExecute = allCurrentFiles.map((file) => ({
       path: file.path || file.name,
       content: file.content,
@@ -336,12 +372,18 @@ function App() {
     runRef.current = handleRun;
   }, [handleRun]);
 
-  // Global shortcut: Ctrl+Enter / Cmd+Enter
+  // Global Shortcuts: Ctrl/Cmd+Enter (Run), Ctrl/Cmd+K (Palette), Ctrl/Cmd+B (Explorer)
   useEffect(() => {
     const handleKeyDown = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
         e.preventDefault();
         runRef.current();
+      } else if ((e.ctrlKey || e.metaKey) && (e.key === "k" || e.key === "K")) {
+        e.preventDefault();
+        setIsCommandPaletteOpen((prev) => !prev);
+      } else if ((e.ctrlKey || e.metaKey) && (e.key === "b" || e.key === "B")) {
+        e.preventDefault();
+        setIsExplorerOpen((prev) => !prev);
       }
     };
 
@@ -358,7 +400,7 @@ function App() {
       const rect = containerRef.current.getBoundingClientRect();
       const relativeX = e.clientX - rect.left;
       const rawPercent = (relativeX / rect.width) * 100;
-      const clampedPercent = Math.min(Math.max(rawPercent, 25), 80);
+      const clampedPercent = Math.min(Math.max(rawPercent, 20), 80);
       setSplitRatio(clampedPercent);
     };
 
@@ -394,6 +436,17 @@ function App() {
 
   return (
     <div className={`workbench-chassis ${isDragging ? "is-resizing" : ""}`}>
+      {/* Screen Reader Announcements */}
+      <div role="status" aria-live="polite" className="sr-only">
+        {isLoading
+          ? "Executing code in isolated environment..."
+          : error
+          ? `Execution completed with error: ${error}`
+          : output
+          ? "Execution completed successfully"
+          : ""}
+      </div>
+
       <Header
         currentView={currentView}
         onViewChange={setCurrentView}
@@ -405,15 +458,19 @@ function App() {
         onRun={handleRun}
         onResetCode={handleResetProject}
         onClearConsole={handleClearConsole}
+        theme={theme}
+        onToggleTheme={handleToggleTheme}
+        onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
       />
 
       {currentView === "dashboard" ? (
-        <main className="dashboard-stage">
-          <Dashboard onLaunch={handleLaunchLanguage} activeProjects={projects} />
+        <main className="dashboard-stage" id="main-content">
+          <Dashboard onLaunch={handleLaunchLanguage} />
         </main>
       ) : (
-        <main className="workbench-stage" ref={containerRef}>
+        <main className="workbench-stage" ref={containerRef} id="main-content">
           <h1 className="sr-only">CodeCraft Online Code Workspace & Compiler</h1>
+
           {/* File Explorer Sidebar */}
           <FileExplorer
             fileTree={currentTree}
@@ -430,7 +487,7 @@ function App() {
           <section
             className="editor-zone"
             style={{ width: `${splitRatio}%` }}
-            aria-label="Code Editor Zone"
+            aria-label="Code Editor"
           >
             {/* Editor Tab Bar */}
             <EditorTabBar
@@ -446,32 +503,32 @@ function App() {
               {activeFile ? (
                 <Editor
                   height="100%"
-                  theme="vs-dark"
+                  theme={theme === "dark" ? "vs-dark" : "light"}
                   language={monacoLanguage}
                   value={activeCode}
                   onChange={handleCodeChange}
                   onMount={handleEditorDidMount}
                   options={{
                     fontSize,
-                    fontFamily: "'IBM Plex Mono', monospace",
+                    fontFamily: "'JetBrains Mono', 'IBM Plex Mono', 'Fira Code', Consolas, monospace",
                     fontLigatures: true,
                     tabSize: 4,
                     minimap: { enabled: false },
                     scrollBeyondLastLine: false,
                     lineNumbers: "on",
                     renderLineHighlight: "all",
-                    roundedSelection: false,
+                    roundedSelection: true,
                     automaticLayout: true,
-                    cursorBlinking: "phase",
+                    cursorBlinking: "smooth",
                     cursorWidth: 2,
                     bracketPairColorization: { enabled: true },
-                    padding: { top: 10, bottom: 10 },
+                    padding: { top: 12, bottom: 12 },
                   }}
                 />
               ) : (
                 <div className="editor-empty-state">
-                  <p>No file currently open.</p>
-                  <p className="empty-sub">Select or create a file in the File Explorer.</p>
+                  <p>No file open</p>
+                  <p className="empty-sub">Select or create a file in the File Explorer sidebar.</p>
                 </div>
               )}
             </div>
@@ -481,14 +538,21 @@ function App() {
           <div
             className="splitter-gutter"
             onMouseDown={() => setIsDragging(true)}
+            onDoubleClick={() => setSplitRatio(58)}
             role="separator"
+            tabIndex={0}
             aria-orientation="vertical"
             aria-valuenow={Math.round(splitRatio)}
-            aria-label="Resize layout divider"
-            title="Drag to resize workspace panels"
-          >
-            <div className="splitter-knurl" />
-          </div>
+            aria-label="Resize editor and output panels"
+            title="Drag to resize panels, double-click to center, or use Left/Right arrows"
+            onKeyDown={(e) => {
+              if (e.key === "ArrowLeft") {
+                setSplitRatio((prev) => Math.max(prev - 5, 20));
+              } else if (e.key === "ArrowRight") {
+                setSplitRatio((prev) => Math.min(prev + 5, 80));
+              }
+            }}
+          />
 
           {/* Console / Output Zone */}
           <div
@@ -504,7 +568,6 @@ function App() {
               error={error}
               isLoading={isLoading}
               executionTime={executionTime}
-              language={language}
               onClear={handleClearCurrentTab}
             />
           </div>
@@ -517,6 +580,23 @@ function App() {
         error={error}
         output={output}
         cursorPosition={cursorPosition}
+      />
+
+      {/* Global Pro Command Palette */}
+      <CommandPalette
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setIsCommandPaletteOpen(false)}
+        allFiles={allCurrentFiles}
+        onSelectFile={handleSelectFile}
+        currentLanguage={language}
+        onSelectLanguage={handleLanguageChange}
+        onRun={handleRun}
+        onResetCode={handleResetProject}
+        onClearConsole={handleClearConsole}
+        theme={theme}
+        onToggleTheme={handleToggleTheme}
+        onToggleExplorer={() => setIsExplorerOpen((prev) => !prev)}
+        onViewChange={setCurrentView}
       />
     </div>
   );

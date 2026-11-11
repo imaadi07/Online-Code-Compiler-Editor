@@ -1,3 +1,5 @@
+import { motion } from "motion/react";
+import { PanelLeft, X } from "lucide-react";
 import { getFileIcon } from "../constants/templates";
 
 export default function EditorTabBar({
@@ -9,18 +11,16 @@ export default function EditorTabBar({
   isExplorerOpen,
 }) {
   return (
-    <div className="editor-tab-bar">
+    <div className="editor-tab-bar" role="tablist" aria-label="Open Files">
       {/* Explorer Toggle Button on Left of tabs */}
       <button
         type="button"
         onClick={onToggleExplorer}
         className={`tab-bar-explorer-btn ${isExplorerOpen ? "active" : ""}`}
-        title={isExplorerOpen ? "Hide File Explorer" : "Show File Explorer"}
+        title={isExplorerOpen ? "Hide File Explorer (Ctrl+B)" : "Show File Explorer (Ctrl+B)"}
+        aria-label={isExplorerOpen ? "Hide File Explorer" : "Show File Explorer"}
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <rect x="3" y="3" width="18" height="18" rx="2" />
-          <line x1="9" y1="3" x2="9" y2="21" />
-        </svg>
+        <PanelLeft className="w-4 h-4" />
       </button>
 
       {/* Tabs list */}
@@ -31,11 +31,30 @@ export default function EditorTabBar({
           return (
             <div
               key={file.id}
+              role="tab"
+              aria-selected={isActive}
+              tabIndex={0}
               className={`file-tab-item ${isActive ? "active-tab" : ""}`}
               onClick={() => onSelectTab(file.id)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onSelectTab(file.id);
+                }
+              }}
               title={file.path || file.name}
             >
-              <span className="tab-file-icon">{getFileIcon(file.name)}</span>
+              {isActive && (
+                <motion.div
+                  layoutId="active-tab-top-border"
+                  className="active-tab-indicator"
+                  transition={{ type: "spring", stiffness: 450, damping: 35 }}
+                />
+              )}
+
+              <span className="tab-file-icon" aria-hidden="true">
+                {getFileIcon(file.name)}
+              </span>
               <span className="tab-file-name">{file.name}</span>
 
               {/* Close Tab Button */}
@@ -48,11 +67,9 @@ export default function EditorTabBar({
                     onCloseTab(file.id);
                   }}
                   title={`Close ${file.name}`}
+                  aria-label={`Close ${file.name}`}
                 >
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <line x1="18" y1="6" x2="6" y2="18" />
-                    <line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
+                  <X className="w-3 h-3" />
                 </button>
               )}
             </div>

@@ -4,10 +4,27 @@ const fs = require("fs-extra");
 const path = require("path");
 const { v4: uuidv4 } = require("uuid");
 
-const docker = new Docker({
-  host: process.env.DOCKER_HOST || "127.0.0.1",
-  port: process.env.DOCKER_PORT ? parseInt(process.env.DOCKER_PORT) : 2375,
-});
+// Adaptive Docker client configuration
+const getDockerClient = () => {
+  if (process.env.DOCKER_SOCKET) {
+    return new Docker({ socketPath: process.env.DOCKER_SOCKET });
+  }
+  if (fs.existsSync("/var/run/docker.sock")) {
+    return new Docker({ socketPath: "/var/run/docker.sock" });
+  }
+  if (process.env.DOCKER_HOST) {
+    return new Docker({
+      host: process.env.DOCKER_HOST,
+      port: process.env.DOCKER_PORT ? parseInt(process.env.DOCKER_PORT) : 2375,
+    });
+  }
+  if (process.platform === "win32") {
+    return new Docker({ socketPath: "//./pipe/docker_engine" });
+  }
+  return new Docker({ socketPath: "/var/run/docker.sock" });
+};
+
+const docker = getDockerClient();
 
 const MAX_OUTPUT_BYTES = 64 * 1024; // 64 KB stream cap
 

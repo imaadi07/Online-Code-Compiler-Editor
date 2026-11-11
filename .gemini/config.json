@@ -1,0 +1,25 @@
+{
+  "rules": {
+    "continuity-ledger": true,
+    "separation-of-concerns": true,
+    "error-learning": true,
+    "error-prevention": true,
+    "implementation-tracking": true,
+    "task-management": true,
+    "product-documentation": true,
+    "no-speculation": true,
+    "skill-updating": true,
+    "architecture-documentation": true,
+    "test-driven-validation": true,
+    "incremental-tasks": true,
+    "context-hygiene": true,
+    "security-sensitive-data": true,
+    "decision-records": true
+  },
+  "project": {
+    "name": "CodeCraft Online Multi-File IDE & Compiler",
+    "type": "web",
+    "techStack": ["React 19", "Vite", "Monaco Editor", "Motion", "GSAP", "Lucide React", "Canvas Confetti", "Node.js Express", "Docker Sandbox"]
+  }
+}
+

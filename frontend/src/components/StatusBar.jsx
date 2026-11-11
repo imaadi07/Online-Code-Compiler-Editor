@@ -1,3 +1,6 @@
+import { ShieldCheck, Cpu, Terminal, CheckCircle2, AlertTriangle, Loader2 } from "lucide-react";
+import { SUPPORTED_LANGUAGES } from "../constants/templates";
+
 export default function StatusBar({
   language,
   isLoading,
@@ -8,44 +11,57 @@ export default function StatusBar({
   const getStatus = () => {
     if (isLoading) {
       return {
-        label: "CONTAINER RUNNING",
+        label: "Executing...",
         stateClass: "state-active",
+        icon: <Loader2 className="w-3 h-3 animate-spin text-cyan-400" />,
       };
     }
     if (error) {
       return {
-        label: "RUNTIME FAULT",
+        label: "Fault Occurred",
         stateClass: "state-fault",
+        icon: <AlertTriangle className="w-3 h-3 text-rose-400" />,
       };
     }
     if (output) {
       return {
-        label: "PROCESS COMPLETE",
+        label: "Completed 0 Errors",
         stateClass: "state-success",
+        icon: <CheckCircle2 className="w-3 h-3 text-emerald-400" />,
       };
     }
     return {
-      label: "IDLE / READY",
+      label: "Sandbox Standby",
       stateClass: "state-idle",
+      icon: <ShieldCheck className="w-3 h-3 text-cyan-400" />,
     };
   };
 
   const status = getStatus();
+  const langObj = SUPPORTED_LANGUAGES.find((l) => l.id === language);
+  const langLabel = langObj ? langObj.name : language;
 
   return (
-    <footer className="telemetry-bar" aria-label="System Telemetry">
+    <footer className="telemetry-bar" role="contentinfo" aria-label="Editor Status Bar">
       <div className="telemetry-left">
         <div className="telemetry-node">
-          <span className={`signal-light ${status.stateClass}`} />
+          {status.icon}
+          <span className={`signal-light ${status.stateClass}`} aria-hidden="true" />
           <span className="telemetry-label">{status.label}</span>
         </div>
 
-        <span className="telemetry-pipe">|</span>
+        <span className="telemetry-pipe" aria-hidden="true">|</span>
 
         <div className="telemetry-node">
-          <span className="telemetry-meta">
-            RUNTIME: {language === "python" ? "PYTHON_3" : "OPENJDK_17"}
-          </span>
+          <Cpu className="w-3 h-3 text-muted" />
+          <span>{langLabel}</span>
+        </div>
+
+        <span className="telemetry-pipe" aria-hidden="true">|</span>
+
+        <div className="telemetry-node">
+          <Terminal className="w-3 h-3 text-muted" />
+          <span>Docker Sandbox Active</span>
         </div>
       </div>
 
@@ -54,10 +70,10 @@ export default function StatusBar({
           <>
             <div className="telemetry-node">
               <span>
-                LN {cursorPosition.lineNumber}, COL {cursorPosition.column}
+                Ln {cursorPosition.lineNumber}, Col {cursorPosition.column}
               </span>
             </div>
-            <span className="telemetry-pipe">|</span>
+            <span className="telemetry-pipe" aria-hidden="true">|</span>
           </>
         )}
 
@@ -65,10 +81,16 @@ export default function StatusBar({
           <span>UTF-8</span>
         </div>
 
-        <span className="telemetry-pipe">|</span>
+        <span className="telemetry-pipe" aria-hidden="true">|</span>
 
         <div className="telemetry-node hotkey-guidance">
-          <span>RUN:</span> <kbd>Ctrl</kbd> + <kbd>Enter</kbd>
+          <span>Run:</span> <kbd>⌘↵</kbd>
+        </div>
+
+        <span className="telemetry-pipe" aria-hidden="true">|</span>
+
+        <div className="telemetry-node hotkey-guidance">
+          <span>Commands:</span> <kbd>⌘K</kbd>
         </div>
       </div>
     </footer>

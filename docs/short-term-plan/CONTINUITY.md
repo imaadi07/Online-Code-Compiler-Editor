@@ -1,0 +1,28 @@
+# Continuity Ledger
+
+- Goal (incl. success criteria): Complete redesign and QA of CodeCraft IDE header controls, specifically replacing the unstyled native browser `<select>` language selector and font-size selector with custom luxury glassmorphic dropdown popovers and tactile steppers, eliminating double-icon bugs and OS rendering inconsistencies.
+- Constraints/Assumptions:
+  - React 19 + Vite frontend.
+  - Motion (`motion/react`) for popover spring transitions.
+  - Custom click-outside detection and Escape keyboard listeners.
+  - Preserved hidden accessible select (`aria-label="Programming Language"`) so automated tests and screen-readers continue working seamlessly.
+  - WCAG 2.1 AA compliant contrast and zero console errors.
+- Key decisions:
+  - Replaced native Windows `<select>` with `.custom-lang-trigger-btn` and `.custom-lang-popover`.
+  - Fixed duplicated emoji bug (`🐍 🐍 Python 3` -> clean single-icon trigger).
+  - Added language badge chips, description subtitles, and active checkmark icons (`Check`).
+  - Upgraded font size adjuster into a tactile stepper `[ - ] 14px [ + ]`.
+- State:
+  - Done:
+    - Redesigned `Header.jsx` with custom floating dropdown and font stepper.
+    - Updated `App.css` with glassmorphic styles, micro-borders, and hover glow.
+    - Verified all 40/40 tests pass.
+    - Verified `npm run lint` passes with 0 errors.
+    - Verified `npm run build` succeeds with minified production assets.
+  - Now: Task complete and verified.
+  - Next: User review or server spin-up.
+- Open questions (UNCONFIRMED if needed): None.
+- Working set (files/ids/commands):
+  - frontend/src/components/Header.jsx
+  - frontend/src/App.css
+  - frontend/src/test/Header.test.jsx

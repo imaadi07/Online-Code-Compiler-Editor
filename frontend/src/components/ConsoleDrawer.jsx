@@ -1,4 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import confetti from "canvas-confetti";
+import {
+  Terminal,
+  FileInput,
+  Copy,
+  Check,
+  Trash2,
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  Sparkles,
+} from "lucide-react";
 
 export default function ConsoleDrawer({
   activeTab,
@@ -9,13 +21,25 @@ export default function ConsoleDrawer({
   error,
   isLoading,
   executionTime,
-  language,
   onClear,
 }) {
   const [copied, setCopied] = useState(false);
 
+  // Trigger celebration confetti on success!
+  useEffect(() => {
+    if (output && !error && !isLoading) {
+      confetti({
+        particleCount: 45,
+        spread: 60,
+        origin: { y: 0.85, x: 0.8 },
+        colors: ["#06b6d4", "#10b981", "#6366f1", "#f59e0b"],
+        disableForReducedMotion: true,
+      });
+    }
+  }, [output, error, isLoading]);
+
   const handleCopy = async () => {
-    const textToCopy = error ? `${output}\n\n[Error]:\n${error}` : output;
+    const textToCopy = error ? `${output}\n\n[Error]:\n${error}`.trim() : output;
     if (!textToCopy) return;
 
     try {
@@ -29,19 +53,13 @@ export default function ConsoleDrawer({
 
   const hasOutput = Boolean(output || error);
   const hasInput = Boolean(input.trim());
-  const shellCommand =
-    language === "python"
-      ? "python3 main.py"
-      : language === "java"
-      ? "javac $(find . -name '*.java') && java Main"
-      : language === "javascript"
-      ? "node index.js"
-      : language === "cpp"
-      ? "g++ -O2 $(find . -name '*.cpp') -o prog && ./prog"
-      : "gcc -O2 $(find . -name '*.c') -o prog && ./prog";
 
   return (
-    <section className="console-drawer" aria-label="Terminal and Stdin Console" id="console-drawer-section">
+    <section
+      className="console-drawer"
+      aria-label="Terminal and Output Console"
+      id="console-drawer-section"
+    >
       {/* Tab Navigation Deck */}
       <div className="console-tabs" role="tablist" id="console-tab-list">
         <div className="tab-group">
@@ -54,10 +72,18 @@ export default function ConsoleDrawer({
             className={`tab-btn ${activeTab === "output" ? "active" : ""}`}
             onClick={() => onTabChange("output")}
           >
-            <span className="tab-icon">❯_</span>
-            <span>Console</span>
-            {error && <span className="badge badge-error">exit 1</span>}
-            {!error && output && <span className="badge badge-success">exit 0</span>}
+            <Terminal className="w-3.5 h-3.5" aria-hidden="true" />
+            <span>Terminal</span>
+            {error && (
+              <span className="badge badge-error">
+                <AlertTriangle className="w-3 h-3" /> Error
+              </span>
+            )}
+            {!error && output && (
+              <span className="badge badge-success">
+                <CheckCircle2 className="w-3 h-3" /> Success
+              </span>
+            )}
           </button>
 
           <button
@@ -69,30 +95,25 @@ export default function ConsoleDrawer({
             className={`tab-btn ${activeTab === "input" ? "active" : ""}`}
             onClick={() => onTabChange("input")}
           >
-            <svg
-              width="13"
-              height="13"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <rect x="2" y="4" width="20" height="16" rx="2" />
-              <line x1="6" y1="12" x2="10" y2="12" />
-            </svg>
-            <span>Stdin</span>
-            {hasInput && <span className="badge badge-indicator" title="Stdin provided" />}
+            <FileInput className="w-3.5 h-3.5" aria-hidden="true" />
+            <span>Input (Stdin)</span>
+            {hasInput && (
+              <span className="badge badge-indicator" title="Standard input provided">
+                Active
+              </span>
+            )}
           </button>
         </div>
 
         <div className="console-toolbar-right">
           {executionTime !== null && !isLoading && (
-            <span className="metric-badge" title="Execution duration" id="execution-time-badge">
-              <span className="metric-dot" />
-              {executionTime} ms
+            <span
+              className="metric-badge"
+              title="Execution time in milliseconds"
+              id="execution-time-badge"
+            >
+              <Clock className="w-3 h-3 text-cyan-400" />
+              <span>{executionTime} ms</span>
             </span>
           )}
 
@@ -103,20 +124,16 @@ export default function ConsoleDrawer({
               onClick={handleCopy}
               className="action-pill-btn"
               title="Copy output to clipboard"
+              aria-label="Copy output to clipboard"
             >
               {copied ? (
                 <>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
+                  <Check className="w-3.5 h-3.5 text-emerald-400" />
                   <span>Copied</span>
                 </>
               ) : (
                 <>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                  </svg>
+                  <Copy className="w-3.5 h-3.5" />
                   <span>Copy</span>
                 </>
               )}
@@ -128,13 +145,11 @@ export default function ConsoleDrawer({
             id="btn-clear-console"
             onClick={onClear}
             className="action-pill-btn"
-            title={activeTab === "output" ? "Clear terminal buffer" : "Clear stdin"}
+            title={activeTab === "output" ? "Clear output" : "Reset input"}
+            aria-label={activeTab === "output" ? "Clear output" : "Reset input"}
           >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-            <span>{activeTab === "output" ? "Clear" : "Reset Stdin"}</span>
+            <Trash2 className="w-3.5 h-3.5" />
+            <span>{activeTab === "output" ? "Clear" : "Reset"}</span>
           </button>
         </div>
       </div>
@@ -142,42 +157,47 @@ export default function ConsoleDrawer({
       {/* Terminal View Body */}
       <div className="console-body">
         {activeTab === "output" && (
-          <div className="tab-pane output-pane" role="tabpanel" id="panel-console-output" aria-labelledby="tab-btn-output">
-            {/* Shell Session Command Bar */}
-            <div className="shell-command-bar">
-              <span className="shell-prompt">$</span>
-              <span className="shell-cmd-text">{shellCommand}</span>
-              {isLoading && <span className="shell-cursor" />}
-            </div>
-
+          <div
+            className="tab-pane output-pane"
+            role="tabpanel"
+            id="panel-console-output"
+            aria-labelledby="tab-btn-output"
+          >
             {isLoading ? (
-              <div className="terminal-loading-state">
-                <div className="industrial-spinner" />
-                <span className="loading-label">Executing in container environment...</span>
+              <div className="terminal-loading-state" role="status">
+                <div className="cosmic-spinner" aria-hidden="true">
+                  <div className="spinner-core" />
+                </div>
+                <div className="loading-text-cluster">
+                  <span className="loading-label">Executing in isolated micro-sandbox...</span>
+                  <span className="loading-sub">Allocating CPU quota & memory limits</span>
+                </div>
               </div>
             ) : !hasOutput ? (
               <div className="terminal-empty-state">
-                <p className="empty-title">Process Idle</p>
+                <div className="terminal-prompt-icon" aria-hidden="true">
+                  <Sparkles className="w-6 h-6 text-cyan-400 opacity-60" />
+                </div>
+                <p className="empty-title">Sandbox ready for execution</p>
                 <p className="empty-subtitle">
-                  No execution trace. Trigger <strong>Run Code</strong> or press <kbd>Ctrl+Enter</kbd> to execute.
+                  Click <strong>Run Code</strong> or press <kbd>⌘+Enter</kbd> / <kbd>Ctrl+Enter</kbd> to execute.
                 </p>
+                <div className="terminal-cli-hint">
+                  <code>guest@codecraft-sandbox:~$ _</code>
+                </div>
               </div>
             ) : (
-              <div className="terminal-stream">
+              <div className="terminal-stream" role="region" aria-label="Program Output">
                 {output && (
                   <div className="stream-section stdout-section">
                     <pre className="stdout-pre" id="terminal-stdout">{output}</pre>
                   </div>
                 )}
                 {error && (
-                  <div className="stream-section stderr-section">
+                  <div className="stream-section stderr-section" role="alert">
                     <div className="stderr-header">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <circle cx="12" cy="12" r="10" />
-                        <line x1="12" y1="8" x2="12" y2="12" />
-                        <line x1="12" y1="16" x2="12.01" y2="16" />
-                      </svg>
-                      <span>Execution Diagnostic:</span>
+                      <AlertTriangle className="w-4 h-4 text-rose-400" />
+                      <span>Execution Fault / Diagnostics:</span>
                     </div>
                     <pre className="stderr-pre" id="terminal-stderr">{error}</pre>
                   </div>
@@ -188,10 +208,15 @@ export default function ConsoleDrawer({
         )}
 
         {activeTab === "input" && (
-          <div className="tab-pane input-pane" role="tabpanel" id="panel-console-stdin" aria-labelledby="tab-btn-input">
+          <div
+            className="tab-pane input-pane"
+            role="tabpanel"
+            id="panel-console-stdin"
+            aria-labelledby="tab-btn-input"
+          >
             <div className="stdin-meta-bar">
               <span className="meta-text">
-                Standard Input Buffer (feeds into <code>input()</code> / <code>Scanner</code>)
+                Standard Input Buffer (passed to <code>cin</code>, <code>Scanner</code>, or <code>input()</code>)
               </span>
               <span className="meta-counter">
                 {input ? input.split("\n").length : 0} {input.split("\n").length === 1 ? "line" : "lines"}
@@ -202,7 +227,7 @@ export default function ConsoleDrawer({
               className="stdin-textarea"
               value={input}
               onChange={(e) => onInputChange(e.target.value)}
-              placeholder={`# Provide lines of standard input here:\ne.g.\n42\nHello World`}
+              placeholder={`# Type standard input lines here before clicking Run:\n# e.g.\n42\nDeveloper\n`}
               spellCheck="false"
               aria-label="Standard Input Buffer"
             />
